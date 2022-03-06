@@ -1,0 +1,20 @@
+NameVirtualHost *
+
+<VirtualHost *>
+	RedirectMatch ^/* http://servidor1.speednet/
+</VirtualHost>
+
+<VirtualHost *>
+	ServerAdmin laudivan@gmail.com
+	ServerName servidor1.speednet
+	DocumentRoot /srv/caracracha/htdocs/
+
+	<Directory /srv/caracracha/htdocs/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+</VirtualHost>
+
+

@@ -1,0 +1,1 @@
+%www-data ALL=NOPASSWD:/srv/caracracha/bin/criar_sessao.sh,/srv/caracracha/bin/excluir_sessao.sh,/srv/caracracha/bin/aplicar_alteracoes.sh,/srv/caracracha/bin/excluir_cliente.sh

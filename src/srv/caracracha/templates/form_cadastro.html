@@ -1,0 +1,219 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+  <title>%titulo% :: Cadastro de Cliente</title>
+  <meta name="author" content="Laudivan Freire de Almeida"/>
+</head>
+
+<body bgcolor="#ffffff">
+<center>
+<table summary="" cellpadding="2" cellspacing="2" border="0" bgcolor="#CECECE" width="100%">
+	<TR>
+	<!-- <TD width="80"><IMG alt="" src="imagens/logo-mini.gif" width="80" height="50" border="0"></TD>-->
+	<TD width="*">&nbsp;</TD><TD width="50"  style="background-color : #CECECE; border-bottom-color : #6e3309; border-bottom-style : inset; border-collapse : separate; border-left-color : #6e3309; border-left-style : inset; border-right-color : #6e3309; border-right-style : inset; border-top-color : #6e3309; border-top-style : inset; color : #ffffff; text-decoration : none;">
+	<A href="%url_tabela_0%">Retornar</A>
+	</TD></TR>
+</table>
+
+<BR>
+%mensagem%
+<BR>
+
+<FORM action="%url_cadastrar%" method="POST" enctype="multipart/form-data" onSubmit = "">
+<table summary="" width="700px" cellpadding="2" cellspacing="0" border="0">
+<TR>	<TD align="right">
+		Login do usu&#225;rio:
+	</TD>
+	<TD align="left" width="200px">
+		<INPUT id="login" type="text" onKeyUp="habilitaSenha()" onKeyPress="return verificarLogin (event)" name="usuario" value="%login%" size="20" maxlength="20" %disabled%>
+	</TD>
+</TR>
+<TR>	<TD align="right">
+		Senha:
+	</TD>
+	<TD align="left">
+		<INPUT id="senha" type="password" onkeyup="habilitaNome()" name="senha" value="%senha%" size="20" maxlength="20">
+	</TD>
+</TR>
+<TR>	<TD align="right">
+		Nome:
+	</TD>
+	<TD align="left">
+		<INPUT id="nome" type="text" onkeyup="habilitaIp()" name="nome" value="%nome%" size="30" maxlength="100">
+	</TD>
+</TR>
+<TR>	<TD align="right">
+		IP:
+	</TD>
+	<TD align="left">
+		<INPUT id="ip" type="text" onkeyup="verificarIp()" name="ip" size="15" maxlength="20" value="%ip%">
+	</TD>
+</TR>
+<TR>	<TD align="right">
+		MAC:
+	</TD>
+	<TD align="left">
+		<INPUT id="mac" type="text" onkeyup="verificaMac ()" name="mac" value="%mac%" size="17" maxlength="20">
+	</TD>
+</TR>
+<TR>	<TD align="right">
+		Banda:
+	</TD>
+	<TD align="left">
+		<select id="banda" name="banda">
+		    %bandas%
+		</select>
+	</TD>
+</TR>
+<TR>	<TD align="right">
+		Bloqueado:
+	</TD>
+	<TD align="left">
+		<INPUT type="checkbox" name="bloqueado" %bloqueado%>
+	</TD>
+</TR>
+<TR>	<TD align="right">
+		Compartilha conex&atilde;o:
+	</TD>
+	<TD align="left">
+		<INPUT type="checkbox" name="compartilha" %compartilha%>
+	</TD>
+</TR>
+<TR>	<TD align="right">
+	&nbsp;
+	</TD>
+	<TD align="left">
+		<INPUT id="btsalvar" type="submit" name="salvar" value="%btsalvar%">
+	</TD>
+</TR>
+
+</table>
+
+</FORM>
+
+</center>
+
+<SCRIPT language="JavaScript" type="text/javascript">
+  function habilitaSenha() {
+  	if(document.getElementById('login').value!="" || 
+  		document.getElementById('login').disabled
+  	) {
+  		document.getElementById('senha').disabled = false;
+  	}else{
+  		document.getElementById('senha').disabled = true;
+  		document.getElementById('senha').value = "%senha%";
+  	}
+  	
+  	habilitaNome();
+  }
+  
+  function habilitaNome() {
+  	if(document.getElementById('senha').value!=""){
+  		document.getElementById('nome').disabled = false;
+  	}else{
+  		document.getElementById('nome').disabled = true;
+  		document.getElementById('nome').value = "%nome%";
+  	}
+  	
+  	habilitaIp();
+  }
+  
+  function habilitaIp() {
+  	if(document.getElementById('nome').value!=""){
+  		document.getElementById('ip').disabled = false;
+  	}else{
+  		document.getElementById('ip').disabled = true;
+  		document.getElementById('ip').value = "%ip%";
+  	}
+  	
+  	habilitaMac();
+  }
+  
+  function habilitaMac() {
+  	if(document.getElementById('nome').value!="" &&
+  		document.getElementById('ip').style.backgroundColor != '#FFB6B6'
+  	){
+  		document.getElementById('mac').disabled = false;
+  	}else{  
+  		document.getElementById('mac').disabled = true;
+  		document.getElementById('mac').value = "%mac%";		
+  	}
+  	
+  	habilitaBanda();
+  	habilitaBtSalvar();
+  }
+  
+  function habilitaBanda() {
+  	if(document.getElementById('mac').value!=""){
+  		document.getElementById('banda').disabled = false;
+  	}else{
+  		document.getElementById('banda').disabled = true;
+  		document.getElementById('banda').value = "%banda%";
+  	}
+  }
+  
+  function habilitaBtSalvar() {
+  	if(document.getElementById('mac').value!=""){
+  		document.getElementById('btsalvar').disabled = false;
+  	}else{
+  		document.getElementById('btsalvar').disabled = true;
+  	}
+  }
+  
+  function verificarLogin (evt) {
+  	evt = (evt) ? evt : window.event;
+  	var charCode = evt.which ? evt.which : evt.keyCode;
+  	var texto = document.getElementById('login').value;
+  	  	
+  	if( (charCode >= 'a'.charCodeAt(0) && charCode <= 'z'.charCodeAt(0)) ||
+  		(charCode >= 'A'.charCodeAt(0) && charCode <= 'Z'.charCodeAt(0)) ||
+  		(charCode >= '0'.charCodeAt(0) && charCode <= '9'.charCodeAt(0))
+  	){	
+  		return true;	
+  	}
+  	return false;
+  }
+  
+  function validarExpReg (str, expreg) { 
+	return expreg.test(str);
+  }
+  
+  function verificarIp() {
+  	var reg = /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/;
+  	var ip = document.getElementById('ip');
+  	
+  	if (ip.value.indexOf('%inicio_ip%') != 0){
+  		ip.value = '%ip%';
+  	}else if ( !validarExpReg (ip.value, reg) ) {
+  		ip.style.backgroundColor = '#FFB6B6';
+  		document.getElementById('mac').disabled = true;
+  		document.getElementById('banda').disabled = true
+  		document.getElementById('btsalvar').disabled = true;
+  	}else{
+  		ip.style.backgroundColor = '';
+  		document.getElementById('mac').disabled = false;
+  	}
+  }
+  
+  function verificaMac () {
+  	var reg = /^[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}$/;
+  	var mac = document.getElementById('mac');
+  	
+  	if ( !validarExpReg (mac.value, reg) ) {
+  		mac.style.backgroundColor = '#FFB6B6';
+  		document.getElementById('banda').disabled = true;
+  		document.getElementById('btsalvar').disabled = true;
+  	}else{
+  		mac.style.backgroundColor = '';
+  		document.getElementById('banda').disabled = false;
+  		document.getElementById('btsalvar').disabled = false;
+  	}
+  }
+
+  habilitaSenha();
+  habilitaIp();
+  </SCRIPT>
+
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+  <title>%titulo% :: Administra&ccedil;&atilde;o de Clientes</title>
+  <meta name="author" content="Laudivan Freire de Almeida"/>
+<SCRIPT language="JavaScript" type="text/javascript">
+function excluirUsuario(usuario) {
+	if(window.confirm('Deseja mesmo excluir '+usuario+'?')){
+		window.location.href="%url_tabela%&excluir="+usuario;
+	}
+}
+</SCRIPT>
+</head>
+<body style="background-color : ffffff;">
+<table summary="CPDATA" cellpadding="2" cellspacing="2" border="0" bgcolor="#CECECE" width="100%">
+	<TR>
+	<!--<TD width="80"><img src="./imagens/logo-mini.gif" width="72" height="40" alt=""></TD>-->
+	<TD width="*">&nbsp;</TD>
+	<TD width="50"  style="background-color : #CECECE; border-bottom-color : #6e3309; border-bottom-style : inset; border-collapse : separate; border-left-color : #6e3309; border-left-style : inset; border-right-color : #6e3309; border-right-style : inset; border-top-color : #6e3309; border-top-style : inset; color : #ffffff; text-decoration : none;">
+	<A href="%url_desconectar%">Desconectar</A>
+	</TD></TR>
+</table>
+
+<BR>
+<BR>
+
+
+<table summary="CPDATA" width="100%" cellpadding="2" cellspacing="0" border="0">
+<TR>
+	<TD align="center" bgcolor="%cor_lista_2%" width="200px">
+		<a href="%url_tabela_2%" style="text-decoration : none;">Lista de administradores</a>
+	</TD>
+	<TD width="3px">&nbsp;</TD>
+	<TD align="center" width="200px">
+		<a href="%url_cadastrar_admin%" style="text-decoration : none;">Cadastrar administrador</a>
+	</TD>
+	<TD width="*">&nbsp;</TD>
+	<TD align="center" width="200px">
+		<a href="%url_cadastrar%" style="text-decoration : none;">Cadastrar cliente</a>
+	</TD>
+	<TD width="3px">&nbsp;</TD>
+	<TD align="center" bgcolor="%cor_lista_0%" width="200px">
+		<a href="%url_tabela_0%" style="text-decoration : none;">Lista de clientes</a>
+	</TD>
+	<TD width="3px">&nbsp;</TD>
+	<TD align="center" bgcolor="%cor_lista_1%" width="200px">
+		<a href="%url_tabela_1%" style="text-decoration : none;">Sess&#245;es ativas</a>
+	</TD>
+</TR>
+<TR><TD bgcolor="#CECECE" colspan="9"></TR>
+</table>
+<table summary="CPDATA" cellpadding="2" cellspacing="2" border="0" width="100%" bgcolor="#EAEAEA">
+%conteudo_tabela%
+</table>
+</body>
+
+</html>

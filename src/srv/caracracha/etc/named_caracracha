@@ -1,0 +1,5 @@
+zone "speednet" {
+	type master;
+	file "/etc/bind/db.caracracha";
+};
+

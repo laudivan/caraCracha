@@ -1,0 +1,193 @@
+#!/bin/bash
+# -------------------------------------------------------- #
+#         Script para inicializao do firewall              #
+# -------------------------------------------------------- #
+# Criado por Laudivan Freire de Almeida (verso 0.1)        #
+# jabber: laudivan@gmail.com			           #
+# email : laudivan@gmail.com                               #
+# -------------------------------------------------------- #
+
+source /srv/caracracha/etc/caracracha.conf
+
+function limpando_tabelas {
+    for TABELA in {filter,nat,mangle}; do
+	iptables -t ${TABELA} -F
+	iptables -t ${TABELA} -X
+    done
+    printf "."
+    
+    iptables -t filter -P INPUT ACCEPT
+    iptables -t filter -P OUTPUT ACCEPT
+    iptables -t filter -P FORWARD ACCEPT   
+    printf "."
+    
+    tc qdisc del dev ${DEV_LAN} root
+    tc qdisc del dev ${DEV_WAN} root 
+    printf "."
+}
+
+
+function setando_regras_padroes () {
+    iptables -P INPUT DROP
+    iptables -P FORWARD DROP
+    iptables -P OUTPUT ACCEPT
+    iptables -I INPUT -i lo -s 127.0.0.1 -j ACCEPT
+    iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+    if [ ${IN_ALL_TCP_PORTS} ]; then 
+    	iptables -A INPUT -p tcp -m multiport --dport ${IN_ALL_TCP_PORTS} -m state --state NEW -j ACCEPT
+    fi
+
+    if [ ${IN_ALL_UDP_PORTS} ]; then 
+    	iptables -A INPUT -p udp -m multiport --dport ${IN_ALL_UDP_PORTS} -m state --state NEW -j ACCEPT
+    fi
+
+    iptables -A INPUT -i ${DEV_LAN} -s ${REDE_LAN} -p tcp -m multiport --dport ${LAN_PORTS_TCP} -m state --state NEW -j ACCEPT
+
+    iptables -A INPUT -i ${DEV_LAN} -s ${REDE_LAN} -p udp -m multiport --dport ${LAN_PORTS_UDP} -m state --state NEW -j ACCEPT
+
+    iptables -A INPUT -p icmp -m limit --limit 1/s --limit-burst 1 -j ACCEPT
+
+    # Para permitir o acesso ao servidor2.speednet
+    iptables -A FORWARD -i ${DEV_LAN} -d 172.16.1.2 -m state --state NEW -j ACCEPT
+
+    printf "."
+}
+
+
+function compartilhando_internet () {
+    echo 1 > /proc/sys/net/ipv4/ip_forward
+    iptables -t nat -A POSTROUTING -s ${REDE_LAN} -j MASQUERADE
+    iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+    #Autenticando IP+MAC
+    for CLIENTE in `ls ${DIR_DB_USUARIOS}`; do
+		IP=$(cat ${DIR_DB_USUARIOS}/${CLIENTE}/ip)
+		MAC=$(cat ${DIR_DB_USUARIOS}/${CLIENTE}/mac)
+		NOME_SESSAO=${CLIENTE}
+
+		#Criando CHAINS de clientes
+		iptables -t nat -N ${NOME_SESSAO}
+		iptables -t nat -I PREROUTING  -i ${DEV_LAN} -s ${IP} -m mac --mac-source ${MAC} -j ${NOME_SESSAO}
+		iptables -t filter -N ${NOME_SESSAO}
+		iptables -t filter -I INPUT -i ${DEV_LAN} -s ${IP} -m mac --mac-source ${MAC} -j ${NOME_SESSAO}
+
+		# Direcinando para o autenticador
+		iptables -t nat -A ${NOME_SESSAO} -j DNAT --to ${IP_LAN}
+
+		# Restricao de compartilhamento
+		if [ ! -e ${DIR_DB_USUARIOS}/${CLIENTE}/compartilha ]; then
+			iptables -t mangle -A POSTROUTING -d ${IP} -j TTL --ttl-set 1
+		fi
+		# Fim da Restricao de compartilhamento
+
+		if [[ "${FWD_TCP_PORTS}" || "${FWD_UDP_PORTS}" ]]; then
+			if [[ "${FWD_TCP_PORTS}" ]]; then
+				iptables -A FORWARD -i ${DEV_LAN} -s ${IP} ! -d ${REDE_LAN} -p tcp -m multiport --dports ${FWD_TCP_PORTS} -m mac --mac-source ${MAC} -m state --state NEW -j ACCEPT
+			fi
+
+			if [[ "${FWD_UDP_PORTS}" ]]; then
+				iptables -A FORWARD -i ${DEV_LAN} -s ${IP} ! -d ${REDE_LAN} -p udp -m multiport --dports ${FWD_UDP_PORTS} -m mac --mac-source ${MAC} -m state --state NEW -j ACCEPT
+			fi
+		else
+			iptables -A FORWARD -i ${DEV_LAN} -s ${IP} ! -d ${REDE_LAN} -m mac --mac-source ${MAC} -m state --state NEW -j ACCEPT
+		fi
+    done
+    printf "."
+
+    #Em caso de reinicio do firewall verificar quem estar logado e recriar as sessões
+    for CLIENTE in `ls ${DIR_DB_SESSAO}`; do
+		IP_SESSAO=$(cat ${DIR_DB_SESSAO}/${CLIENTE}/ip)
+		MAC_SESSAO=$(cat ${DIR_DB_SESSAO}/${CLIENTE}/mac)
+		NOME_SESSAO=${CLIENTE}
+
+		#Limpando chains de cliente
+		iptables -t nat -F ${NOME_SESSAO}
+		iptables -t filter -F ${NOME_SESSAO}
+
+		#servidor2.speednet
+		#Conectividade Social
+		iptables -t nat -A ${NOME_SESSAO} -d 172.16.1.2 -j ACCEPT
+		#Radio UOL no passa pelo proxy
+		iptables -t nat -A ${NOME_SESSAO} -i ${DEV_LAN} -d 200.221.0.0/16 -j ACCEPT
+
+		#Fazendo redirecionamento para proxy
+		iptables -t nat -A ${NOME_SESSAO} ! -d ${REDE_LAN} -p tcp --dport www -j REDIRECT --to-port ${PROXY_PORT}
+		iptables -t nat -A ${NOME_SESSAO} ! -d ${REDE_LAN} -p udp --dport www -j REDIRECT --to-port ${PROXY_PORT}
+
+		#Liberando acesso ao proxy
+		iptables -t filter -A ${NOME_SESSAO} -p tcp --dport ${PROXY_PORT} -j ACCEPT
+		iptables -t filter -A ${NOME_SESSAO} -p udp --dport ${PROXY_PORT} -j ACCEPT
+
+    done
+
+    iptables -A FORWARD -o ${DEV_LAN} -m state --state NEW,INVALID -j DROP
+    printf "."
+}
+
+function controle_de_banda () {
+	#adicionado interfaces
+	tc qdisc del dev ${DEV_LAN} root
+	tc qdisc add dev ${DEV_LAN} root handle 1 cbq bandwidth 10Mbit avpkt 1000 cell 8
+	tc class change dev ${DEV_LAN} root cbq weight 1Mbit allot 1514
+
+	tc qdisc del dev ${DEV_WAN} root
+	tc qdisc add dev ${DEV_WAN} root handle 1 cbq bandwidth 10Mbit avpkt 1000 cell 8
+	tc class change dev ${DEV_WAN} root cbq weight 1Mbit allot 1514
+
+	printf "."
+
+	#inicio do markador :)
+	mark=2
+	for CLIENTE in `ls ${DIR_DB_USUARIOS}`; do
+		ip=$(cat ${DIR_DB_USUARIOS}/${CLIENTE}/ip)
+		ratein=$(cat ${DIR_DB_USUARIOS}/${CLIENTE}/banda)
+		rateout="64"
+
+		#entrada
+		tc class add dev ${DEV_LAN} parent 1: classid 1:$mark cbq bandwidth 10Mbit rate "$ratein"Kbit weight `expr $ratein / 10`Kbit prio 5 allot 1514 cell 8 maxburst 20 avpkt 1000 bounded
+		tc qdisc add dev ${DEV_LAN} parent 1:$mark handle $mark sfq perturb 10
+		tc filter add dev ${DEV_LAN} parent 1:0 protocol ip prio 200 handle $mark fw classid 1:$mark
+		
+		iptables -t mangle -A POSTROUTING -d $ip -j MARK --set-mark $mark
+		
+		#Saida 
+		tc class add dev ${DEV_WAN} parent 1: classid 1:$mark cbq bandwidth 10Mbit rate "$rateout"Kbit weight `expr $rateout / 10`Kbit prio 5 allot 1514 cell 8 maxburst 20 avpkt 1000 bounded
+		tc qdisc add dev ${DEV_WAN} parent 1:$mark handle $mark  sfq perturb 10
+		tc filter add dev ${DEV_WAN} parent 1:0 protocol ip prio 200 handle $mark fw classid 1:$mark
+
+                iptables -t mangle -A FORWARD -s $ip -j MARK --set-mark $mark
+
+		mark=`expr $mark + 1`
+	done
+	printf "."
+}
+
+case "${1}" in
+    start)
+	printf "Inciando Firewall :"	
+	setando_regras_padroes
+	compartilhando_internet
+	controle_de_banda
+	printf "[PRONTO]"
+    ;;
+    stop)
+	printf "Parando Firewall :"
+	limpando_tabelas
+	printf "[PARADO]"
+    ;;
+    restart)
+	printf "Reiniciando Firewall :"
+	limpando_tabelas
+	setando_regras_padroes
+	compartilhando_internet
+	controle_de_banda
+	printf "[PRONTO]"
+    ;;
+    *)
+    echo "Voce deve usar {start|stop|restart}"
+    exit 1
+esac
+
+printf '\n'
+
+exit 0

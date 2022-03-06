@@ -1,0 +1,38 @@
+<html>
+<head>
+	<title>%titulo% :: mudar senha</title>
+</head>
+<body bgcolor="#fbdfd5">
+<CENTER>%mensagem%</CENTER>
+<FORM action="http://%url_mudar_senha%" method="POST" enctype="multipart/form-data">
+<TABLE summary="" width="100%" cellspacing="2" border="0" cellpadding="2" align="center">
+  	<tr>
+	<TD>Login:</TD>
+	<TD><INPUT type="text" disabled name="login_mudar" value="%login%" size="20" maxlength="20"></TD>
+	</tr>
+
+	<tr>
+	<TD>Senha anterior:</TD>
+	<TD><INPUT type="password" checked name="senha" size="15" maxlength="15"></TD>
+	</tr>
+
+	<tr>
+	<TD>Nova senha:</TD>
+	<TD><INPUT type="password" checked name="senha1" size="15" maxlength="15"></TD>
+	</tr>
+
+	<tr>
+	<TD>Repita a nova senha:</TD>
+	<TD><INPUT type="password" checked name="senha2" size="15" maxlength="15"></TD>
+	</tr>
+
+	<tr>
+	<TD  height="100%">&nbsp;</TD>
+	<TD><INPUT type="submit" name="enviar" value="Salvar"><INPUT type="button" name="fechar" value="Fechar janela" onclick="window.close()"></TD>
+	</tr>
+</TABLE>
+  
+</FORM>
+</body>
+
+</html>

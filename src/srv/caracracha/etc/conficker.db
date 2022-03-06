@@ -1,0 +1,14 @@
+$TTL 31536000
+@       IN      SOA     ns1.conficker.at. hostmaster.conficker.at. (
+                                    2009020304      ; serial
+                                    1W              ; refresh, seconds
+                                    2W              ; retry, seconds
+                                    52W              ; expire, seconds
+                                    1W)             ; minimum, seconds
+;
+        IN      NS      ns1.cert.at.
+        IN      NS      ns2.cert.at.
+
+        A       172.16.1.3
+*       A       172.16.1.3
+

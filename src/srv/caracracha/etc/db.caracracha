@@ -1,0 +1,12 @@
+$ttl 38400
+speednet.	IN	SOA	172.16.1.1. servidor1.speednet. (
+			1151734738
+			10800
+			3600
+			604800
+			38400 )
+speednet.			IN	NS	172.16.1.1.
+speednet.			IN	A	172.16.1.1
+servidor1.speednet.		IN	A	172.16.1.1
+servidor2.speednet.		IN	A	172.16.2.1
+servidor3.speednet.		IN	A	172.16.3.1
